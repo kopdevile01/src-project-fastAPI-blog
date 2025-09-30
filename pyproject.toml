@@ -17,7 +17,6 @@ dependencies = [
     "aiosmtplib (>=4.0.2,<5.0.0)"
 ]
 
-
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
@@ -26,6 +25,7 @@ build-backend = "poetry.core.masonry.api"
 ruff = "^0.13.2"
 pre-commit = "^4.3.0"
 pytest = "^8.4.2"
+httpx = "^0.28.1"
 
 [tool.poetry]
 packages = [{ include = "src" }]
@@ -35,3 +35,6 @@ src = ["src", "tests"]
 line-length = 100
 target-version = "py311"
 select = ["E", "W", "F"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
