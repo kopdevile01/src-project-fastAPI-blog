@@ -1,0 +1,18 @@
+# IDE
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Env
+.venv/
+
+# Test caches
+.pytest_cache/
+
+# Ruff cache (если включишь позже)
+.ruff_cache/
