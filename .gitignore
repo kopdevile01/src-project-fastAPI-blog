@@ -16,3 +16,6 @@ __pycache__/
 
 # Ruff cache (если включишь позже)
 .ruff_cache/
+
+# Docker
+*.log
