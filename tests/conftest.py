@@ -35,7 +35,6 @@ def _create_schema():
 
 @pytest.fixture()
 def db_session():
-    # Транзакция на каждый тест, в конце откатываем
     conn = engine.connect()
     trans = conn.begin()
     session = TestingSessionLocal(bind=conn)
