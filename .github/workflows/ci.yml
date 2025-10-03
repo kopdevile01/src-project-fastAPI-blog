@@ -5,10 +5,30 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    # Поднимаем Postgres как сервис для job
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: fastapi_user
+          POSTGRES_PASSWORD: fastapi_password
+          POSTGRES_DB: fastapi_blog_db_test
+        # healthcheck, чтобы job стартовал только когда БД готова
+        options: >-
+          --health-cmd="pg_isready -U fastapi_user -d fastapi_blog_db_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
     env:
+      # Poetry — ставим всё в локальный venv
       POETRY_VIRTUALENVS_CREATE: "true"
       POETRY_VIRTUALENVS_IN_PROJECT: "true"
       POETRY_NO_INTERACTION: "1"
+      # URL тестовой базы: подставится в Settings как DATABASE_URL
+      TEST_DATABASE_URL: postgresql+psycopg://fastapi_user:fastapi_password@localhost:5432/fastapi_blog_db_test
+      DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
 
     steps:
       - uses: actions/checkout@v4
@@ -21,14 +41,8 @@ jobs:
       - name: Install Poetry
         run: pipx install "poetry==2.1.3"
 
-      - name: Show Poetry version and config
-        run: |
-          poetry --version
-          poetry config --list | grep virtualenvs
-
       - name: Install deps
-        run: |
-          poetry install --no-root
+        run: poetry install --no-root
 
       - name: Lint (ruff)
         run: |
