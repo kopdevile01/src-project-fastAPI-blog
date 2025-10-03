@@ -45,7 +45,9 @@ jobs:
         run: pipx install poetry==1.8.3
 
       - name: Install deps
-        run: poetry install --no-root
+        run: |
+          poetry --version
+          poetry install --no-root
 
       - name: Lint (ruff)
         run: |
