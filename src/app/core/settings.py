@@ -21,6 +21,12 @@ class Settings(BaseSettings):
 
     rabbitmq_url: str = "amqp://guest:guest@localhost:5672/"
 
+    s3_endpoint: str = "http://localhost:9000"
+    s3_access_key: str = "minio"
+    s3_secret_key: str = "minio123"
+    s3_bucket: str = "blog-images"
+    s3_public_url: str = "http://localhost:9000"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
