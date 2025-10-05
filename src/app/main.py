@@ -1,12 +1,15 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from sqlalchemy import text
-from sqlalchemy.orm import Session
 
 from app.routers import categories
-from app.db import get_db
+from app.db import engine
+from app.routers import auth
+from app.middleware.auth import JWTMiddleware
 
 app = FastAPI(title="FastAPI Blog API")
+app.add_middleware(JWTMiddleware)
 app.include_router(categories.router)
+app.include_router(auth.router)
 
 
 @app.get("/")
@@ -15,6 +18,7 @@ def read_root():
 
 
 @app.get("/health/db")
-def health_db(db: Session = Depends(get_db)):
-    db.execute(text("SELECT 1"))
+def health_db():
+    with engine.connect() as conn:
+        conn.execute(text("SELECT 1"))
     return {"db": "ok"}
