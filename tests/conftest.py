@@ -62,3 +62,11 @@ def _override_get_db(db_session):
 @pytest.fixture
 def client():
     return TestClient(app)
+
+
+@pytest.fixture
+def auth_client(client: TestClient) -> TestClient:
+    client.post("/auth/register", json={"email": "tester@example.com", "password": "secret"})
+    r = client.post("/auth/login", json={"email": "tester@example.com", "password": "secret"})
+    assert r.status_code == 200
+    return client

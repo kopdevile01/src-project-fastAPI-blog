@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db import get_db
+from app.deps.auth import require_auth
 from app.schemas.post import PostCreate, PostUpdate, PostOut
 from app.services.posts import list_posts, create_post, update_post, soft_delete_post
 
@@ -27,7 +28,7 @@ def get_posts(
     )
 
 
-@router.post("/", response_model=PostOut, status_code=201)
+@router.post("/", response_model=PostOut, status_code=201, dependencies=[Depends(require_auth)])
 def create(payload: PostCreate, db: Session = Depends(get_db)):
     return create_post(
         db,
@@ -38,7 +39,7 @@ def create(payload: PostCreate, db: Session = Depends(get_db)):
     )
 
 
-@router.patch("/{post_id}", response_model=PostOut)
+@router.patch("/{post_id}", response_model=PostOut, dependencies=[Depends(require_auth)])
 def update(post_id: int, payload: PostUpdate, db: Session = Depends(get_db)):
     obj = update_post(db, post_id, data=payload.model_dump())
     if not obj:
@@ -46,7 +47,7 @@ def update(post_id: int, payload: PostUpdate, db: Session = Depends(get_db)):
     return obj
 
 
-@router.delete("/{post_id}", status_code=204)
+@router.delete("/{post_id}", status_code=204, dependencies=[Depends(require_auth)])
 def delete(post_id: int, db: Session = Depends(get_db)):
     ok = soft_delete_post(db, post_id)
     if not ok:
