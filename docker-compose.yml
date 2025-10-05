@@ -36,6 +36,21 @@ services:
       mc anonymous set public local/blog-images || true
       "
 
+  worker:
+    build: .
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672//
+    command: >
+      poetry run celery -A src.app.celery_app.celery worker --loglevel=INFO
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
   backend:
     build: .
     depends_on:
