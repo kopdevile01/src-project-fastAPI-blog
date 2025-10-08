@@ -3,7 +3,8 @@ from __future__ import annotations
 import os
 import importlib
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 
@@ -22,6 +23,24 @@ from app.core.settings import settings  # noqa: E402
 from app.db import Base, get_db  # noqa: E402
 from app.main import app  # noqa: E402
 
+
+def _ensure_pg_database_exists(db_url: str) -> None:
+    """Создаёт БД, если её нет (через подключение к postgres)."""
+    url = make_url(db_url)
+    admin_url = url.set(database="postgres")  # подключаемся к системной БД
+    dbname = url.database
+
+    engine_admin = create_engine(admin_url, isolation_level="AUTOCOMMIT", future=True)
+    with engine_admin.connect() as conn:
+        exists = conn.execute(
+            text("SELECT 1 FROM pg_database WHERE datname = :n"),
+            {"n": dbname},
+        ).scalar()
+        if not exists:
+            conn.execute(text(f'CREATE DATABASE "{dbname}"'))
+
+
+_ensure_pg_database_exists(settings.database_url)
 engine = create_engine(settings.database_url, future=True, pool_pre_ping=True)
 TestingSessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
