@@ -1,6 +1,8 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
   test:
@@ -8,13 +10,13 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15-alpine
-        ports:
-          - 5432:5432
+        image: postgres:17-alpine
         env:
           POSTGRES_USER: fastapi_user
           POSTGRES_PASSWORD: fastapi_password
           POSTGRES_DB: fastapi_blog_db_test
+        ports:
+          - "5432:5432"
         options: >-
           --health-cmd="pg_isready -U fastapi_user -d fastapi_blog_db_test"
           --health-interval=5s
@@ -39,6 +41,17 @@ jobs:
 
       - name: Install Poetry
         run: pipx install "poetry==2.1.3"
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/pypoetry
+            ./.venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
 
       - name: Install deps
         run: poetry install --no-root
