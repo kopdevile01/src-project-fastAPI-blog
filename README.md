@@ -53,10 +53,6 @@ poetry run pytest -q
 ```
 
 ## Быстрая проверка
-### Здоровье БД
-```bash
-curl -s http://127.0.0.1:8000/health/db
-```
 ### Регистрация и логин
 ```bash
 curl -s -X POST http://127.0.0.1:8000/auth/register -H 'Content-Type: application/json' \
