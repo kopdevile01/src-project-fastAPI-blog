@@ -32,7 +32,7 @@ def upload_bytes(key: str, data: bytes, *, content_type: str | None) -> str:
 
     try:
         _s3.put_object(Bucket=settings.s3_bucket, Key=key, Body=data, **extra)
-    except Exception:  # noqa: BLE001 - логируем стек и пробрасываем дальше
+    except Exception:
         log.exception("S3 upload failed")
         raise
 

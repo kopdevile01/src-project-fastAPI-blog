@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -10,28 +10,21 @@ from app.services.auth import register_user, authenticate_user
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/register", response_model=UserOut, status_code=201)
+@router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def register(payload: UserCreate, db: Session = Depends(get_db)):
-    try:
-        user = register_user(db, email=payload.email, password=payload.password)
-    except ValueError:
-        raise HTTPException(409, detail="User already exists")
-    return user
+    return register_user(db, email=payload.email, password=payload.password)
 
 
 @router.post("/login")
 def login(payload: UserCreate, response: Response, db: Session = Depends(get_db)):
     token = authenticate_user(db, email=payload.email, password=payload.password)
     if not token:
-        raise HTTPException(401, detail="Invalid credentials")
-
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     response.set_cookie(
-        key="access_token",
+        "access_token",
         value=token,
         httponly=True,
         samesite="lax",
-        secure=False,  # в проде → True (если https)
-        max_age=60 * 60,
     )
     return {"access_token": token}
 
