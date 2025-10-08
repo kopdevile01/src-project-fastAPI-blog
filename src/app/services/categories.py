@@ -1,4 +1,5 @@
 from __future__ import annotations
+from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -23,7 +24,10 @@ def list_categories(
 def create_category(db: Session, payload: CategoryCreate) -> Category:
     exists = db.scalar(select(Category).where(Category.name == payload.name))
     if exists:
-        raise ValueError("Category already exists")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Category already exists",
+        )
     obj = Category(name=payload.name)
     db.add(obj)
     db.commit()

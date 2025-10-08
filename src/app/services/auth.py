@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -11,7 +12,7 @@ from app.tasks.email import send_registration_email
 def register_user(db: Session, *, email: str, password: str) -> User:
     exists = db.scalar(select(User).where(User.email == email))
     if exists:
-        raise ValueError("User already exists")
+        raise HTTPException(status.HTTP_409_CONFLICT, detail="User already exists")
 
     user = User(email=email, hashed_password=hash_password(password))
     db.add(user)

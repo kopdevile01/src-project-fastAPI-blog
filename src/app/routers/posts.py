@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -28,7 +28,12 @@ def get_posts(
     )
 
 
-@router.post("/", response_model=PostOut, status_code=201, dependencies=[Depends(require_auth)])
+@router.post(
+    "/",
+    response_model=PostOut,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_auth)],
+)
 def create(payload: PostCreate, db: Session = Depends(get_db)):
     return create_post(
         db,
@@ -43,13 +48,15 @@ def create(payload: PostCreate, db: Session = Depends(get_db)):
 def update(post_id: int, payload: PostUpdate, db: Session = Depends(get_db)):
     obj = update_post(db, post_id, data=payload.model_dump())
     if not obj:
-        raise HTTPException(404, detail="Post not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Post not found")
     return obj
 
 
-@router.delete("/{post_id}", status_code=204, dependencies=[Depends(require_auth)])
+@router.delete(
+    "/{post_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_auth)]
+)
 def delete(post_id: int, db: Session = Depends(get_db)):
-    ok = soft_delete_post(db, post_id)
-    if not ok:
-        raise HTTPException(404, detail="Post not found")
+    deleted = soft_delete_post(db, post_id)
+    if not deleted:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Post not found")
     return None
