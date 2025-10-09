@@ -1,7 +1,10 @@
 .git
-.gitignore
 .venv
 __pycache__/
+*.pyc
+.mypy_cache/
 .pytest_cache/
-.idea/
-*.log
+.ruff_cache/
+_data/
+.env
+.env.*

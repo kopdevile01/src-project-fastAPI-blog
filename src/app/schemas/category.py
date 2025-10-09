@@ -1,9 +1,9 @@
 from __future__ import annotations
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict
 
 
 class CategoryBase(BaseModel):
-    name: str = Field(min_length=1, max_length=100)
+    name: str
 
 
 class CategoryCreate(CategoryBase):
@@ -12,6 +12,4 @@ class CategoryCreate(CategoryBase):
 
 class CategoryOut(CategoryBase):
     id: int
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
