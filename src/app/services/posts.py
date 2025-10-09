@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
-from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.post import Post
+from app.repositories import posts as repo
 
 
 def list_posts(
@@ -16,48 +14,37 @@ def list_posts(
     search: str | None = None,
     category_id: int | None = None,
 ) -> list[Post]:
-    stmt = select(Post).where(Post.deleted_at.is_(None)).order_by(Post.id)
-
-    if category_id is not None:
-        stmt = stmt.where(Post.category_id == category_id)
-
-    if search:
-        document = func.to_tsvector("simple", func.concat_ws(" ", Post.title, Post.content))
-        query = func.plainto_tsquery("simple", search)
-        stmt = stmt.where(document.op("@@")(query))
-
-    offset = (page_number - 1) * page_size
-    return db.execute(stmt.offset(offset).limit(page_size)).scalars().all()
+    return repo.db_list(
+        db,
+        page_number=page_number,
+        page_size=page_size,
+        search=search,
+        category_id=category_id,
+    )
 
 
 def create_post(
     db: Session, *, title: str, content: str, category_id: int, image_url: str | None
 ) -> Post:
-    obj = Post(title=title, content=content, category_id=category_id, image_url=image_url)
-    db.add(obj)
-    db.commit()
-    db.refresh(obj)
-    return obj
+    return repo.create(
+        db,
+        title=title,
+        content=content,
+        category_id=category_id,
+        image_url=image_url,
+    )
 
 
 def update_post(db: Session, post_id: int, *, data: dict) -> Post | None:
-    obj = db.get(Post, post_id)
-    if not obj or obj.deleted_at is not None:
+    obj = repo.get_visible(db, post_id)
+    if not obj:
         return None
-
-    for k, v in data.items():
-        if v is not None:
-            setattr(obj, k, v)
-
-    db.commit()
-    db.refresh(obj)
-    return obj
+    return repo.update_fields(db, obj, data)
 
 
 def soft_delete_post(db: Session, post_id: int) -> bool:
-    obj = db.get(Post, post_id)
-    if not obj or obj.deleted_at is not None:
+    obj = repo.get_visible(db, post_id)
+    if not obj:
         return False
-    obj.deleted_at = datetime.now(timezone.utc)
-    db.commit()
+    repo.soft_delete(db, obj)
     return True

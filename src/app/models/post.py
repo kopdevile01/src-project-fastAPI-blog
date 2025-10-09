@@ -9,7 +9,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db import Base
 
 if TYPE_CHECKING:
-    # только для аннотаций, во время рантайма не импортируется
     from app.models.category import Category
 
 
