@@ -1,42 +1,31 @@
 from __future__ import annotations
-
 from datetime import datetime, timezone
-
-from sqlalchemy import func, select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
-
 from app.models.post import Post
 
 
-def get(db: Session, post_id: int) -> Post | None:
-    return db.get(Post, post_id)
-
-
-def get_visible(db: Session, post_id: int) -> Post | None:
-    stmt = select(Post).where(Post.id == post_id, Post.deleted_at.is_(None))
-    return db.scalar(stmt)
-
-
-def db_list(
+def list_(
     db: Session,
     *,
     page_number: int,
     page_size: int,
-    search: str | None,
-    category_id: int | None,
+    search: str | None = None,
+    category_id: int | None = None,
 ) -> list[Post]:
     stmt = select(Post).where(Post.deleted_at.is_(None)).order_by(Post.id)
-
     if category_id is not None:
         stmt = stmt.where(Post.category_id == category_id)
-
     if search:
         document = func.to_tsvector("simple", func.concat_ws(" ", Post.title, Post.content))
         query = func.plainto_tsquery("simple", search)
         stmt = stmt.where(document.op("@@")(query))
-
     offset = (page_number - 1) * page_size
     return db.execute(stmt.offset(offset).limit(page_size)).scalars().all()
+
+
+def get(db: Session, post_id: int) -> Post | None:
+    return db.get(Post, post_id)
 
 
 def create(
@@ -49,7 +38,7 @@ def create(
     return obj
 
 
-def update_fields(db: Session, obj: Post, data: dict) -> Post:
+def update(db: Session, obj: Post, data: dict) -> Post:
     for k, v in data.items():
         if v is not None:
             setattr(obj, k, v)

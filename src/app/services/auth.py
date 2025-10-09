@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password, verify_password, create_jwt
@@ -10,7 +9,7 @@ from app.repositories import users as users_repo
 
 def register_user(db: Session, *, email: str, password: str):
     if users_repo.get_by_email(db, email):
-        raise HTTPException(status.HTTP_409_CONFLICT, detail="User already exists")
+        raise ValueError("User already exists")
 
     user = users_repo.create(db, email=email, hashed_password=hash_password(password))
 

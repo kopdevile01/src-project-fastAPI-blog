@@ -1,5 +1,5 @@
 from __future__ import annotations
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -32,4 +32,7 @@ def list_categories(
     dependencies=[Depends(require_auth)],
 )
 def create_category(payload: CategoryCreate, db: Session = Depends(get_db)):
-    return svc.create_category(db, payload)
+    try:
+        return svc.create_category(db, payload)
+    except ValueError as e:
+        raise HTTPException(status.HTTP_409_CONFLICT, detail=str(e))
