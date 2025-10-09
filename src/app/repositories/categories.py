@@ -14,7 +14,7 @@ def get_by_name(db: Session, name: str) -> Category | None:
     return db.scalar(select(Category).where(Category.name == name))
 
 
-def db_list(db: Session, *, page_number: int, page_size: int, search: str | None) -> list[Category]:
+def list_(db: Session, *, page_number: int, page_size: int, search: str | None) -> list[Category]:
     stmt = select(Category).order_by(Category.id)
     if search:
         stmt = stmt.where(Category.name.ilike(f"%{search}%"))
